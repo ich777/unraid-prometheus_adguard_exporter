@@ -1,0 +1,247 @@
+Menu="Utilities"
+Title="AdGuard Exporter"
+Icon="prometheus_adguard_exporter.png"
+---
+<?php
+//Get selected driver version
+$adguard_hostname = shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh get_adguard_hostname");
+$adguard_username = shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh get_adguard_username");
+$adguard_password = shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh get_adguard_password");
+$adguard_protocol = shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh get_adguard_protocol");
+$adguard_port = shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh get_adguard_port");
+$exporter_port = shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh get_exporter_port");
+$exporter_interval = shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh get_exporter_interval");
+$status = shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh get_status");
+?>
+
+<script>
+//Don't execute commands again if page is refreshed
+    if ( window.history.replaceState ) {
+        window.history.replaceState( null, null, window.location.href );
+    }
+</script>
+
+<script>
+//Disable submit button if no radio button is selected
+$(function(){
+    $("input[type='radio']").change(function(){
+
+        $("input[type='submit']").prop("disabled", false);
+        //Or
+        //$("input[type='submit']").removeAttr("disabled");
+    });
+});
+</script>
+<h1 style="text-align: center;"><a target="_blank" rel="noopener"><span style="color: red;">Prometheus AdGuard Exporter</span></a></h1>
+<p style="text-align: center;">Prometheus AdGuard Exporter takes informations gathered from the AdGuard API and provides it to a Prometheus database.<br /><strong>Export URL:</strong> The URL for the exportet metrics is: 'http://YOURunRAIDIP:9617/metrics' (to use it in Prometheus add the target: 'YOURunRAIDIP:9617' to your Prometheus yaml).<br /><em>Usage is not limited to Prometheus only. Data can be formated and displayed to any database or graphical node.</em></p>
+<div style="width: 100%; float:left">
+    <div id="title">
+        <span class="left"></span>
+    </div>
+<?
+if (isset($adguard_hostname ) === true && trim($adguard_hostname ) !== ''):
+?>
+<?
+if (isset($status ) === true && trim($status ) === 'starting'):
+?>
+<h3 style="text-align: right;">Status: <strong><span style="color: orange;">Starting...</span></strong></h3>
+<h2 style="text-align: center;"><strong>Something seems wrong, Prometheus AdGuard Exporter still starting, please try to refresh the page in a few minutes.</strong></h2>
+<h3><strong>Current Configuration:</strong></h3><br/>
+<table style="border-collapse: collapse; width: 300px; height: 100px;" border="0">
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard Hostname/IP:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $adguard_hostname ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard Username:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $adguard_username ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard Token:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;">*********</td>
+</tr>
+<tr style="height: 10px;">
+<td style="height: 10px; border-style: hidden; width: 100px;"><strong>AdGuard Protocol:</strong></td>
+<td style="width: 50%; height: 10px; border-style: none;"><?php print $adguard_protocol ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard WebUI Port:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $adguard_port ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>Exporter Port:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $exporter_port ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>Exporter Interval:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $exporter_interval ?></td>
+</table>
+<br/>
+<h3><strong>Change current Configuration:</strong></h3>
+<form id="s" method="post" >
+<input type = "text" style="width: 100px;" name = "adguard_hostname" placeholder="127.0.0.1" required>
+<input type = "text" style="width: 40px;" name = "adguard_port" placeholder="80" required value=<?php print $adguard_port ?> />
+<input type = "text" style="width: 100px;" name = "adguard_username" data-inputmask="mask" placeholder="admin" required>
+<input type = "password" style="width: 100px;" name = "adguard_password" data-inputmask="mask" placeholder="password" required>
+<input type = "hidden" name = "adguard_protocol" value=<?php print $adguard_protocol ?>>
+<input type = "hidden" name = "exporter_port" value=<?php print $exporter_port ?>>
+<input type = "hidden" name = "exporter_interval" value=<?php print $exporter_interval ?>>
+<input type="submit" name="changeADGUARDconfig" value="Change & Start" />
+</form>
+<?
+elseif (isset($status ) === true && trim($status ) === 'running'):
+?>
+<h3 style="text-align: right;">Status: <strong><span style="color: green;">Running</span></strong></h3>
+<form id="STOP" method="post" >
+<input type="submit" name="stopEXPORTER" value="Stop" />
+</form>
+<h3><strong>Current Configuration:</strong></h3><br/>
+<table style="border-collapse: collapse; width: 300px; height: 100px;" border="0">
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard Hostname/IP:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $adguard_hostname ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard Username:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $adguard_username ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard Token:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;">*********</td>
+</tr>
+<tr style="height: 10px;">
+<td style="height: 10px; border-style: hidden; width: 100px;"><strong>AdGuard Protocol:</strong></td>
+<td style="width: 50%; height: 10px; border-style: none;"><?php print $adguard_protocol ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard WebUI Port:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $adguard_port ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>Exporter Port:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $exporter_port ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>Exporter Interval:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $exporter_interval ?></td>
+</table>
+<br/>
+<h3><strong>Change current Configuration:</strong></h3>
+<form id="CHANGESTART" method="post" >
+<input type = "text" style="width: 100px;" name = "adguard_hostname" placeholder="127.0.0.1" required>
+<input type = "text" style="width: 40px;" name = "adguard_port" placeholder="80" required value=<?php print $adguard_port ?> />
+<input type = "text" style="width: 100px;" name = "adguard_username" data-inputmask="mask" placeholder="admin" required>
+<input type = "password" style="width: 100px;" name = "adguard_password" data-inputmask="mask" placeholder="password" required>
+<input type = "hidden" name = "adguard_protocol" value=<?php print $adguard_protocol ?>>
+<input type = "hidden" name = "exporter_port" value=<?php print $exporter_port ?>>
+<input type = "hidden" name = "exporter_interval" value=<?php print $exporter_interval ?>>
+<input type="submit" name="changeADGUARDconfig" value="Change & Start" />
+</form>
+<?
+else :
+?>
+<h3 style="text-align: right;">Status: <strong><span style="color: red;">Stopped</span></strong></h3>
+<form id="s" method="post" >
+<input type = "hidden" name = "adguard_hostname" value=<?php print $adguard_hostname ?> />
+<input type = "hidden" name = "adguard_username" value=<?php print $adguard_username ?> />
+<input type = "hidden" name = "adguard_password" value=<?php print $adguard_password ?> />
+<input type = "hidden" name = "adguard_port" value=<?php print $adguard_port ?> />
+<input type = "hidden" name = "adguard_protocol" value=<?php print $adguard_protocol ?> />
+<input type = "hidden" name = "exporter_port" value=<?php print $exporter_port ?> />
+<input type = "hidden" name = "exporter_interval" value=<?php print $exporter_interval ?> />
+<input type="submit" name="startUP" value="Start" />
+</form>
+<h3><strong>Current Configuration:</strong></h3><br/>
+<table style="border-collapse: collapse; width: 300px; height: 100px;" border="0">
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard Hostname/IP:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $adguard_hostname ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard Username:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $adguard_username ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard Token:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;">*********</td>
+</tr>
+<tr style="height: 10px;">
+<td style="height: 10px; border-style: hidden; width: 100px;"><strong>AdGuard Protocol:</strong></td>
+<td style="width: 50%; height: 10px; border-style: none;"><?php print $adguard_protocol ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>AdGuard WebUI Port:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $adguard_port ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>Exporter Port:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $exporter_port ?></td>
+</tr>
+<tr style="height: 18px;">
+<td style="height: 18px; border-style: hidden; width: 100px;"><strong>Exporter Interval:</strong></td>
+<td style="width: 50%; height: 18px; border-style: none;"><?php print $exporter_interval ?></td>
+</table>
+<br/>
+<h3><strong>Change current Configuration:</strong></h3>
+<form id="s" method="post" >
+<input type = "text" style="width: 100px;" name = "adguard_hostname" placeholder="127.0.0.1" required>
+<input type = "text" style="width: 40px;" name = "adguard_port" placeholder="80" required value=<?php print $adguard_port ?> />
+<input type = "text" style="width: 100px;" name = "adguard_username" data-inputmask="mask" placeholder="admin" required>
+<input type = "password" style="width: 100px;" name = "adguard_password" data-inputmask="mask" placeholder="password" required>
+<input type = "hidden" name = "adguard_protocol" value=<?php print $adguard_protocol ?>>
+<input type = "hidden" name = "exporter_port" value=<?php print $exporter_port ?>>
+<input type = "hidden" name = "exporter_interval" value=<?php print $exporter_interval ?>>
+<input type="submit" name="changeADGUARDconfig" value="Change & Start">
+</form>
+<? endif; ?>
+<? else: ?>
+<h2 style="text-align: center;"><span style="color: red;"><strong>AdGuard Hostname not set!</strong></span></h2>
+<form id="s" method="post" >
+<input type = "text" style="width: 100px;" name = "adguard_hostname" placeholder="127.0.0.1" required>
+<input type = "text" style="width: 40px;" name = "adguard_port" placeholder="80" required value=<?php print $adguard_port ?> />
+<input type = "text" style="width: 100px;" name = "adguard_username" data-inputmask="mask" placeholder="admin" required>
+<input type = "password" style="width: 100px;" name = "adguard_password" data-inputmask="mask" placeholder="password" required>
+<input type = "hidden" name = "adguard_protocol" value=<?php print $adguard_protocol ?>>
+<input type = "hidden" name = "exporter_port" value=<?php print $exporter_port ?>>
+<input type = "hidden" name = "exporter_interval" value=<?php print $exporter_interval ?>>
+<input type="submit" name="changeADGUARDconfig" value="Confirm & Start">
+</form>
+<? endif; ?>
+</div>
+
+<?php
+if(isset($_POST['changeADGUARDconfig'])) {
+$adguard_hostname = $_POST["adguard_hostname"];
+$adguard_username = $_POST["adguard_username"];
+$adguard_password = $_POST["adguard_password"];
+$adguard_protocol = $_POST["adguard_protocol"];
+$adguard_port = $_POST["adguard_port"];
+$exporter_port = $_POST["exporter_port"];
+$exporter_interval = $_POST["exporter_interval"];
+shell_exec("logger $adguard_hostname $adguard_username $adguard_password $adguard_protocol $adguard_port $exporter_port $exporter_interval");
+
+shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh change_adguard_settings $adguard_hostname $adguard_username $adguard_password $adguard_protocol $adguard_port $exporter_port $exporter_interval");
+echo '<script>parent.window.location.reload();</script>';
+}
+?>
+
+<?php
+if(isset($_POST['startUP'])) {
+$adguard_hostname = $_POST["adguard_hostname"];
+$adguard_username = $_POST["adguard_username"];
+$adguard_password = $_POST["adguard_password"];
+$adguard_protocol = $_POST["adguard_protocol"];
+$adguard_port = $_POST["adguard_port"];
+$exporter_port = $_POST["exporter_port"];
+$exporter_interval = $_POST["exporter_interval"];
+shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh change_adguard_settings $adguard_hostname $adguard_username $adguard_password $adguard_protocol $adguard_port $exporter_port $exporter_interval");
+echo '<script>parent.window.location.reload();</script>';
+}
+?>
+
+<?php
+if(isset($_POST['stopEXPORTER'])) {
+shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh stop_exporter");
+echo '<script>parent.window.location.reload();</script>';
+}
+?>
