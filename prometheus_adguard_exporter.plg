@@ -69,7 +69,7 @@ if [ -z "$(pidof prometheus_adguard_exporter)" ]; then
     echo "-------------Starting Prometheus AdGuard Exporter!--------------"
     echo "&emhttp;/include/prometheus_adguard_exporter_init.sh $ADG_HOST $ADG_USR $ADG_PASSWD $ADG_PROTO $ADG_PORT $EXP_PORT $EXP_INTERV" | at now
   else
-    echo "---Please set your connection details for AdGuard on the plugin configuration page!---"
+    echo "---Please enter your connection details for AdGuard on the plugin configuration page!---"
   fi
 else
   echo
