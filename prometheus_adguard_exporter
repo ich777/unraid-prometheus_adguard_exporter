@@ -1,0 +1,99 @@
+<?xml version='1.0' standalone='yes'?>
+<!DOCTYPE PLUGIN [
+  <!ENTITY name      "prometheus_adguard_exporter">
+  <!ENTITY author    "ich777">
+  <!ENTITY version   "">
+  <!ENTITY launch    "Settings/adguard_exporter">
+  <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
+  <!ENTITY pluginURL "&gitURL;/&name;.plg">
+  <!ENTITY md5       "">
+  <!ENTITY plugin    "/boot/config/plugins/&name;">
+  <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
+]>
+
+<PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0" support="https://forums.unraid.net/topic/110995-plugin-prometheus-unraid-plugins/">
+
+<CHANGES>
+
+###2021.06.28
+- Initial release - based on version v1.13
+
+</CHANGES>
+
+<FILE Run="/bin/bash">
+<INLINE>
+rm -f $(ls /boot/config/plugins/&name;/&name;*.tgz 2>/dev/null|grep -v '&version;')
+</INLINE>
+</FILE>
+
+<FILE Name="/boot/config/plugins/&name;/&name;-&version;.tgz" Run="upgradepkg --install-new">
+<URL>&gitURL;/packages/&name;-&version;.tgz</URL>
+<MD5>&md5;</MD5>
+</FILE>
+
+<FILE Name="&emhttp;/README.md">
+<INLINE>
+**Prometheus AdGuard Exporter**
+
+Is a slim plugin, that takes informations gathered from the AdGuard API and provides it to a Prometheus database. Usage is not limited to Prometheus only. Data can be formated and displayed to any database or graphical node.  
+Export URL: The URL for the exportet metrics is: 'http://YOURunRAIDIP:9617/metrics' (to use it in Prometheus add the target: 'YOURunRAIDIP:9617' to your Prometheus yaml).  
+This Plugin is based on adguard-exporter from ebrianne: https://github.com/ebrianne/adguard-exporter
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash">
+<INLINE>
+
+#Create settings file if not found
+if [ ! -f "&plugin;/settings.cfg" ]; then
+  echo 'adguard_hostname=
+adguard_username=
+adguard_password=
+adguard_protocol=http
+adguard_port=80
+exporter_interval=10
+exporter_port=9617' > "&plugin;/settings.cfg"
+fi
+
+if [ -z "$(pidof prometheus_adguard_exporter)" ]; then
+  ADG_HOST="$(cat &plugin;/settings.cfg | grep "adguard_hostname=" | cut -d '=' -f2-)"
+  if [ ! -z "${ADG_HOST}" ]; then
+    ADG_USR="$(cat &plugin;/settings.cfg | grep "adguard_username=" | cut -d '=' -f2-)"
+    ADG_PASSWD="$(cat &plugin;/settings.cfg | grep "adguard_password=" | cut -d '=' -f2-)"
+    ADG_PROTO="$(cat &plugin;/settings.cfg | grep "adguard_protocol=" | cut -d '=' -f2-)"
+    ADG_PORT="$(cat &plugin;/settings.cfg | grep "adguard_port=" | cut -d '=' -f2-)"
+    EXP_INTERV="$(cat &plugin;/settings.cfg | grep "exporter_interval=" | cut -d '=' -f2-)"
+    EXP_PORT="$(cat &plugin;/settings.cfg | grep "exporter_port=" | cut -d '=' -f2-)"
+    #Starting Prometheus AdGuard Exporter Daemon
+    echo
+    echo "-------------Starting Prometheus AdGuard Exporter!--------------"
+    echo "&emhttp;/include/prometheus_adguard_exporter_init.sh $ADG_HOST $ADG_USR $ADG_PASSWD $ADG_PROTO $ADG_PORT $EXP_INTERV $EXP_PORT" | at now
+  fi
+else
+  echo
+  echo "---Nothing to do, Prometheus AdGuard Exporter already started---"
+fi
+
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+
+echo "---------------------------------------------"
+echo "---Uninstalling prometheus_adguard_exporter---"
+echo "---------------------------------------------"
+# Remove plugin related files
+kill $(pidof prometheus_adguard_exporter) 2>/dev/null
+removepkg &name;-&version;
+rm -rf /usr/local/emhttp/plugins/&name;
+rm -rf &plugin;
+echo
+echo "------------------------------------------------------------"
+echo "---Uninstallation of prometheus_adguard_exporter complete!---"
+echo "------------------------------------------------------------"
+echo
+
+</INLINE>
+</FILE>
+</PLUGIN>
