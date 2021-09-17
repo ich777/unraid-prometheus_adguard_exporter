@@ -218,9 +218,7 @@ $adguard_protocol = $_POST["adguard_protocol"];
 $adguard_port = $_POST["adguard_port"];
 $exporter_port = $_POST["exporter_port"];
 $exporter_interval = $_POST["exporter_interval"];
-shell_exec("logger $adguard_hostname $adguard_username $adguard_password $adguard_protocol $adguard_port $exporter_port $exporter_interval");
-
-shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh change_adguard_settings $adguard_hostname $adguard_username $adguard_password $adguard_protocol $adguard_port $exporter_port $exporter_interval");
+shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh change_adguard_settings ".escapeshellarg($adguard_hostname)." ".escapeshellarg($adguard_username)." ".escapeshellarg($adguard_password)." ".escapeshellarg($adguard_protocol)." ".escapeshellarg($adguard_port)." ".escapeshellarg($exporter_port)." ".escapeshellarg($exporter_interval)."");
 echo '<script>parent.window.location.reload();</script>';
 }
 ?>
@@ -234,7 +232,7 @@ $adguard_protocol = $_POST["adguard_protocol"];
 $adguard_port = $_POST["adguard_port"];
 $exporter_port = $_POST["exporter_port"];
 $exporter_interval = $_POST["exporter_interval"];
-shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh change_adguard_settings $adguard_hostname $adguard_username $adguard_password $adguard_protocol $adguard_port $exporter_port $exporter_interval");
+shell_exec("/usr/local/emhttp/plugins/prometheus_adguard_exporter/include/exec.sh change_adguard_settings ".escapeshellarg($adguard_hostname)." ".escapeshellarg($adguard_username)." ".escapeshellarg($adguard_password)." ".escapeshellarg($adguard_protocol)." ".escapeshellarg($adguard_port)." ".escapeshellarg($exporter_port)." ".escapeshellarg($exporter_interval)."");
 echo '<script>parent.window.location.reload();</script>';
 }
 ?>
